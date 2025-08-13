@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "total": 15,
+    "passed": 2,
+    "failed": 13,
+    "successRate": "13.33%"
+  },
+  "timestamp": "2025-08-13T01:18:07.558Z",
+  "details": [
+    {
+      "test": "Server Health Check",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.362Z"
+    },
+    {
+      "test": "Admin Login",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.396Z"
+    },
+    {
+      "test": "Patient Registration",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.419Z"
+    },
+    {
+      "test": "Barcode Generation",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.419Z"
+    },
+    {
+      "test": "Physical Examination",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.420Z"
+    },
+    {
+      "test": "Advanced Tests",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.420Z"
+    },
+    {
+      "test": "Health Assessment",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.421Z"
+    },
+    {
+      "test": "Treatment Management",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.421Z"
+    },
+    {
+      "test": "Referral Management",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:18:07.422Z"
+    },
+    {
+      "test": "Dashboard Statistics",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.444Z"
+    },
+    {
+      "test": "Recent Activities",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.467Z"
+    },
+    {
+      "test": "Pending Follow-ups",
+      "passed": false,
+      "details": "Request failed with status code 404",
+      "timestamp": "2025-08-13T01:18:07.489Z"
+    },
+    {
+      "test": "Invalid Endpoint",
+      "passed": true,
+      "details": "Should return 404",
+      "timestamp": "2025-08-13T01:18:07.522Z"
+    },
+    {
+      "test": "Unauthorized Access",
+      "passed": false,
+      "details": "Should return 401",
+      "timestamp": "2025-08-13T01:18:07.540Z"
+    },
+    {
+      "test": "Invalid Patient ID",
+      "passed": true,
+      "details": "Should return error for non-existent patient",
+      "timestamp": "2025-08-13T01:18:07.558Z"
+    }
+  ]
+}

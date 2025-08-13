@@ -1,0 +1,57 @@
+{
+  "timestamp": "2025-08-13T01:41:48.825Z",
+  "baseUrl": "http://localhost:5000/api",
+  "testAdmin": "admin",
+  "summary": {
+    "total": 11,
+    "passed": 10,
+    "failed": 1,
+    "successRate": "90.9%"
+  },
+  "results": [
+    {
+      "name": "Health Check",
+      "passed": true
+    },
+    {
+      "name": "Authentication",
+      "passed": true
+    },
+    {
+      "name": "Patient Management",
+      "passed": true
+    },
+    {
+      "name": "Barcode System",
+      "passed": true
+    },
+    {
+      "name": "Physical Examination",
+      "passed": true
+    },
+    {
+      "name": "Advanced Tests",
+      "passed": true
+    },
+    {
+      "name": "Health Assessment",
+      "passed": false
+    },
+    {
+      "name": "Treatment Management",
+      "passed": true
+    },
+    {
+      "name": "Referral Management",
+      "passed": true
+    },
+    {
+      "name": "Dashboard",
+      "passed": true
+    },
+    {
+      "name": "Logout",
+      "passed": true
+    }
+  ]
+}

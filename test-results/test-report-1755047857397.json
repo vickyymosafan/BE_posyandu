@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "total": 15,
+    "passed": 1,
+    "failed": 14,
+    "successRate": "6.67%"
+  },
+  "timestamp": "2025-08-13T01:17:37.397Z",
+  "details": [
+    {
+      "test": "Server Health Check",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.353Z"
+    },
+    {
+      "test": "Admin Login",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.359Z"
+    },
+    {
+      "test": "Patient Registration",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.364Z"
+    },
+    {
+      "test": "Barcode Generation",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.365Z"
+    },
+    {
+      "test": "Physical Examination",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.366Z"
+    },
+    {
+      "test": "Advanced Tests",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.367Z"
+    },
+    {
+      "test": "Health Assessment",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.367Z"
+    },
+    {
+      "test": "Treatment Management",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.368Z"
+    },
+    {
+      "test": "Referral Management",
+      "passed": false,
+      "details": "No patient ID available",
+      "timestamp": "2025-08-13T01:17:37.368Z"
+    },
+    {
+      "test": "Dashboard Statistics",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.372Z"
+    },
+    {
+      "test": "Recent Activities",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.377Z"
+    },
+    {
+      "test": "Pending Follow-ups",
+      "passed": false,
+      "details": "",
+      "timestamp": "2025-08-13T01:17:37.381Z"
+    },
+    {
+      "test": "Invalid Endpoint",
+      "passed": false,
+      "details": "Should return 404",
+      "timestamp": "2025-08-13T01:17:37.386Z"
+    },
+    {
+      "test": "Unauthorized Access",
+      "passed": false,
+      "details": "Should return 401",
+      "timestamp": "2025-08-13T01:17:37.391Z"
+    },
+    {
+      "test": "Invalid Patient ID",
+      "passed": true,
+      "details": "Should return error for non-existent patient",
+      "timestamp": "2025-08-13T01:17:37.395Z"
+    }
+  ]
+}
