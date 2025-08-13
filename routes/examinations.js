@@ -39,4 +39,12 @@ router.get('/:id', PhysicalExamController.getPhysicalExamById);
  */
 router.put('/:id', PhysicalExamController.updatePhysicalExam);
 
+/**
+ * @route   DELETE /api/pemeriksaan/:id
+ * @desc    Hapus pemeriksaan fisik
+ * @access  Private (Admin only)
+ * @param   id - ID pemeriksaan fisik
+ */
+router.delete('/:id', PhysicalExamController.deletePhysicalExam);
+
 module.exports = router;

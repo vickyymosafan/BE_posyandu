@@ -37,6 +37,15 @@ router.post('/', PatientController.createPatient);
 router.get('/search/barcode', PatientController.searchPatientByBarcode);
 
 /**
+ * @route   GET /api/pasien/:id/aktivitas
+ * @desc    Ambil aktivitas terbaru pasien dari semua modul
+ * @access  Private (Admin only)
+ * @param   id - ID pasien
+ * @query   limit - Jumlah aktivitas yang akan dikembalikan (default: 10)
+ */
+router.get('/:id/aktivitas', PatientController.getPatientActivities);
+
+/**
  * @route   GET /api/pasien/:id
  * @desc    Ambil data pasien berdasarkan ID
  * @access  Private (Admin only)

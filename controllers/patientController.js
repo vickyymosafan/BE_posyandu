@@ -557,6 +557,151 @@ class PatientController {
             });
         }
     }
+
+    /**
+     * Get patient's recent activities from all modules
+     * GET /api/pasien/:id/aktivitas
+     */
+    static async getPatientActivities(req, res) {
+        try {
+            const patientId = parseInt(req.params.id);
+            const limit = parseInt(req.query.limit) || 10;
+
+            // Validasi ID pasien
+            if (!patientId || isNaN(patientId)) {
+                return res.status(400).json({
+                    sukses: false,
+                    pesan: 'ID pasien tidak valid'
+                });
+            }
+
+            // Cek apakah pasien ada
+            const patientExists = await executeQuery(
+                'SELECT id, nama FROM pasien WHERE id = ?',
+                [patientId]
+            );
+
+            if (patientExists.length === 0) {
+                return res.status(404).json({
+                    sukses: false,
+                    pesan: 'Pasien tidak ditemukan'
+                });
+            }
+
+            // Get recent activities from different tables using separate queries and combine them
+            const queries = [
+                // Pemeriksaan fisik
+                `SELECT 
+                    'pemeriksaan_fisik' as jenis,
+                    pf.id,
+                    '${patientExists[0].nama}' as nama_pasien,
+                    p.id_pasien,
+                    a.nama_lengkap as admin_nama,
+                    pf.tanggal_pemeriksaan as waktu,
+                    'Pemeriksaan Fisik' as deskripsi
+                FROM pemeriksaan_fisik pf
+                INNER JOIN pasien p ON pf.id_pasien = p.id
+                INNER JOIN admin a ON pf.diperiksa_oleh = a.id
+                WHERE pf.id_pasien = ?
+                ORDER BY pf.tanggal_pemeriksaan DESC
+                LIMIT ${limit}`,
+                
+                // Tes lanjutan
+                `SELECT 
+                    'tes_lanjutan' as jenis,
+                    tl.id,
+                    '${patientExists[0].nama}' as nama_pasien,
+                    p.id_pasien,
+                    a.nama_lengkap as admin_nama,
+                    tl.tanggal_tes as waktu,
+                    'Tes Lanjutan' as deskripsi
+                FROM tes_lanjutan tl
+                INNER JOIN pasien p ON tl.id_pasien = p.id
+                INNER JOIN admin a ON tl.dites_oleh = a.id
+                WHERE tl.id_pasien = ?
+                ORDER BY tl.tanggal_tes DESC
+                LIMIT ${limit}`,
+                
+                // Penilaian kesehatan
+                `SELECT 
+                    'penilaian_kesehatan' as jenis,
+                    pk.id,
+                    '${patientExists[0].nama}' as nama_pasien,
+                    p.id_pasien,
+                    a.nama_lengkap as admin_nama,
+                    pk.tanggal_penilaian as waktu,
+                    CONCAT('Penilaian Kesehatan - ', pk.kategori_penilaian) as deskripsi
+                FROM penilaian_kesehatan pk
+                INNER JOIN pasien p ON pk.id_pasien = p.id
+                INNER JOIN admin a ON pk.dinilai_oleh = a.id
+                WHERE pk.id_pasien = ?
+                ORDER BY pk.tanggal_penilaian DESC
+                LIMIT ${limit}`,
+                
+                // Pengobatan
+                `SELECT 
+                    'pengobatan' as jenis,
+                    pg.id,
+                    '${patientExists[0].nama}' as nama_pasien,
+                    p.id_pasien,
+                    a.nama_lengkap as admin_nama,
+                    pg.tanggal_resep as waktu,
+                    CONCAT('Pengobatan - ', pg.nama_obat) as deskripsi
+                FROM pengobatan pg
+                INNER JOIN pasien p ON pg.id_pasien = p.id
+                INNER JOIN admin a ON pg.diresepkan_oleh = a.id
+                WHERE pg.id_pasien = ?
+                ORDER BY pg.tanggal_resep DESC
+                LIMIT ${limit}`,
+                
+                // Rujukan
+                `SELECT 
+                    'rujukan' as jenis,
+                    r.id,
+                    '${patientExists[0].nama}' as nama_pasien,
+                    p.id_pasien,
+                    a.nama_lengkap as admin_nama,
+                    r.tanggal_rujukan as waktu,
+                    CONCAT('Rujukan ke ', r.nama_fasilitas) as deskripsi
+                FROM rujukan r
+                INNER JOIN pasien p ON r.id_pasien = p.id
+                INNER JOIN admin a ON r.dirujuk_oleh = a.id
+                WHERE r.id_pasien = ?
+                ORDER BY r.tanggal_rujukan DESC
+                LIMIT ${limit}`
+            ];
+
+            // Execute all queries and combine results
+            const results = await Promise.all(
+                queries.map(query => executeQuery(query, [patientId]))
+            );
+
+            // Combine all results into one array
+            const allActivities = results.flat();
+
+            // Sort by waktu (time) descending and limit to requested amount
+            const sortedActivities = allActivities
+                .sort((a, b) => new Date(b.waktu) - new Date(a.waktu))
+                .slice(0, limit);
+
+            res.json({
+                sukses: true,
+                pesan: 'Aktivitas pasien berhasil diambil',
+                data: {
+                    pasien: patientExists[0],
+                    aktivitas: sortedActivities
+                }
+            });
+
+        } catch (error) {
+            console.error('Error getting patient activities:', error);
+            res.status(500).json({
+                sukses: false,
+                pesan: 'Gagal mengambil aktivitas pasien',
+                error: error.message
+            });
+        }
+    }
 }
 
 module.exports = PatientController;

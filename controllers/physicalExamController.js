@@ -514,6 +514,61 @@ class PhysicalExamController {
             });
         }
     }
+
+    /**
+     * Hapus pemeriksaan fisik
+     * DELETE /api/pemeriksaan/:id
+     */
+    static async deletePhysicalExam(req, res) {
+        try {
+            const examId = req.params.id;
+
+            // Validasi ID pemeriksaan
+            if (!examId || isNaN(examId)) {
+                return res.status(400).json({
+                    sukses: false,
+                    pesan: 'ID pemeriksaan tidak valid'
+                });
+            }
+
+            // Cek apakah pemeriksaan ada
+            const existingExam = await executeQuery(
+                'SELECT id, id_pasien FROM pemeriksaan_fisik WHERE id = ?',
+                [examId]
+            );
+
+            if (existingExam.length === 0) {
+                return res.status(404).json({
+                    sukses: false,
+                    pesan: 'Pemeriksaan tidak ditemukan'
+                });
+            }
+
+            // Hapus pemeriksaan fisik
+            await executeQuery(
+                'DELETE FROM pemeriksaan_fisik WHERE id = ?',
+                [examId]
+            );
+
+            // Log aktivitas
+            await executeQuery(
+                'INSERT INTO log_akses (id_admin, id_pasien, aksi, alamat_ip) VALUES (?, ?, ?, ?)',
+                [req.admin.id, existingExam[0].id_pasien, 'DELETE_PHYSICAL_EXAM', req.ip]
+            );
+
+            res.json({
+                sukses: true,
+                pesan: 'Pemeriksaan fisik berhasil dihapus'
+            });
+
+        } catch (error) {
+            console.error('Error deleting physical exam:', error);
+            res.status(500).json({
+                sukses: false,
+                pesan: 'Gagal menghapus pemeriksaan fisik'
+            });
+        }
+    }
 }
 
 module.exports = PhysicalExamController;
