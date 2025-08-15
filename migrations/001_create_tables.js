@@ -24,6 +24,10 @@ class CreateTablesMigration {
                 throw new Error('Database connection failed');
             }
 
+            // Disable foreign key checks temporarily for Railway MySQL
+            await executeQuery('SET FOREIGN_KEY_CHECKS = 0');
+            console.log('Disabled foreign key checks for migration');
+
             // Read and execute schema file
             const schemaPath = path.join(__dirname, '../database/schema.sql');
             const schemaSQL = await fs.readFile(schemaPath, 'utf8');
@@ -41,9 +45,21 @@ class CreateTablesMigration {
                 }
             }
 
+            // Re-enable foreign key checks
+            await executeQuery('SET FOREIGN_KEY_CHECKS = 1');
+            console.log('Re-enabled foreign key checks');
+
             console.log(`Migration ${this.name} completed successfully`);
             return true;
         } catch (error) {
+            // Re-enable foreign key checks even if migration fails
+            try {
+                await executeQuery('SET FOREIGN_KEY_CHECKS = 1');
+                console.log('Re-enabled foreign key checks after error');
+            } catch (fkError) {
+                console.warn('Failed to re-enable foreign key checks:', fkError.message);
+            }
+            
             console.error(`Migration ${this.name} failed:`, error);
             throw error;
         }
