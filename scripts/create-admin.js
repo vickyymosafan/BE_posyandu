@@ -1,6 +1,5 @@
 require('dotenv').config();
 const { executeQuery } = require('../utils/database');
-const PasswordUtils = require('../utils/password');
 
 /**
  * Script untuk membuat admin default
@@ -28,16 +27,13 @@ async function createDefaultAdmin() {
       return;
     }
 
-    // Hash password
-    const hashedPassword = await PasswordUtils.hashPassword(adminData.kata_sandi);
-
-    // Insert admin ke database
+    // Insert admin ke database (plain text password)
     const result = await executeQuery(
-      `INSERT INTO admin (nama_pengguna, hash_kata_sandi, nama_lengkap, email, aktif) 
+      `INSERT INTO admin (nama_pengguna, kata_sandi, nama_lengkap, email, aktif) 
        VALUES (?, ?, ?, ?, ?)`,
       [
         adminData.nama_pengguna,
-        hashedPassword,
+        adminData.kata_sandi,
         adminData.nama_lengkap,
         adminData.email,
         true

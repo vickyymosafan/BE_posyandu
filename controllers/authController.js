@@ -27,7 +27,7 @@ class AuthController {
 
       // Cari admin di database
       const adminRows = await executeQuery(
-        `SELECT id, nama_pengguna, hash_kata_sandi, nama_lengkap, email, aktif 
+        `SELECT id, nama_pengguna, kata_sandi, nama_lengkap, email, aktif 
          FROM admin WHERE nama_pengguna = ?`,
         [sanitizedUsername]
       );
@@ -49,11 +49,8 @@ class AuthController {
         });
       }
 
-      // Verifikasi password
-      const isPasswordValid = await PasswordUtils.verifyPassword(
-        kata_sandi,
-        admin.hash_kata_sandi
-      );
+      // Verifikasi password (plain text)
+      const isPasswordValid = kata_sandi === admin.kata_sandi;
 
       if (!isPasswordValid) {
         return res.status(401).json({
@@ -286,19 +283,9 @@ class AuthController {
         });
       }
 
-      // Validasi kekuatan password baru
-      const passwordValidation = PasswordUtils.validatePasswordStrength(kata_sandi_baru);
-      if (!passwordValidation.isValid) {
-        return res.status(400).json({
-          sukses: false,
-          pesan: 'Kata sandi baru tidak memenuhi kriteria',
-          errors: passwordValidation.errors
-        });
-      }
-
       // Ambil data admin dari database
       const adminRows = await executeQuery(
-        'SELECT hash_kata_sandi FROM admin WHERE id = ?',
+        'SELECT kata_sandi FROM admin WHERE id = ?',
         [req.admin.id]
       );
 
@@ -309,11 +296,8 @@ class AuthController {
         });
       }
 
-      // Verifikasi password lama
-      const isOldPasswordValid = await PasswordUtils.verifyPassword(
-        kata_sandi_lama,
-        adminRows[0].hash_kata_sandi
-      );
+      // Verifikasi password lama (plain text)
+      const isOldPasswordValid = kata_sandi_lama === adminRows[0].kata_sandi;
 
       if (!isOldPasswordValid) {
         return res.status(400).json({
@@ -322,13 +306,10 @@ class AuthController {
         });
       }
 
-      // Hash password baru
-      const hashedNewPassword = await PasswordUtils.hashPassword(kata_sandi_baru);
-
-      // Update password di database
+      // Update password di database (plain text)
       await executeQuery(
-        'UPDATE admin SET hash_kata_sandi = ?, diperbarui_pada = NOW() WHERE id = ?',
-        [hashedNewPassword, req.admin.id]
+        'UPDATE admin SET kata_sandi = ?, diperbarui_pada = NOW() WHERE id = ?',
+        [kata_sandi_baru, req.admin.id]
       );
 
       // Log aktivitas ganti password

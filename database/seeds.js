@@ -1,20 +1,12 @@
-const bcrypt = require('bcrypt');
 const { executeQuery, executeTransaction, testConnection } = require('../utils/database');
 
 /**
  * Database Seeder for Posyandu Management System
  */
 class DatabaseSeeder {
-    constructor() {
-        this.saltRounds = 12;
-    }
+    constructor() {}
 
-    /**
-     * Hash password using bcrypt
-     */
-    async hashPassword(password) {
-        return await bcrypt.hash(password, this.saltRounds);
-    }
+    // Hashing dihapus: password disimpan plain text sesuai permintaan
 
     /**
      * Generate unique patient ID
@@ -43,12 +35,10 @@ class DatabaseSeeder {
 
         for (const admin of admins) {
             try {
-                const hashedPassword = await this.hashPassword(admin.kata_sandi);
-                
                 await executeQuery(
-                    `INSERT INTO admin (nama_pengguna, hash_kata_sandi, nama_lengkap, email) 
+                    `INSERT INTO admin (nama_pengguna, kata_sandi, nama_lengkap, email) 
                      VALUES (?, ?, ?, ?)`,
-                    [admin.nama_pengguna, hashedPassword, admin.nama_lengkap, admin.email]
+                    [admin.nama_pengguna, admin.kata_sandi, admin.nama_lengkap, admin.email]
                 );
                 
                 console.log(`✓ Created admin: ${admin.nama_pengguna}`);
