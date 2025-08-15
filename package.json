@@ -20,7 +20,19 @@
     "db:seed": "node database/seeds.js seed",
     "db:seed:clear": "node database/seeds.js clear",
     "db:test": "node database/test-connection.js",
-    "create-admin": "node scripts/create-admin.js"
+    "create-admin": "node scripts/create-admin.js",
+    "railway:deploy": "railway up --service backend",
+    "railway:logs": "railway logs --service backend",
+    "railway:shell": "railway shell backend",
+    "railway:vars": "railway variables --service backend",
+    "railway:status": "railway status --service backend",
+    "railway:health": "node check-server.js",
+    "railway:db:migrate": "railway run --service backend npm run db:migrate",
+    "railway:db:seed": "railway run --service backend npm run db:seed",
+    "railway:db:status": "railway run --service backend npm run db:status",
+    "railway:create-admin": "railway run --service backend npm run create-admin",
+    "railway:test": "railway run --service backend npm run test:all",
+    "railway:connect": "railway connect mysql --service database"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
