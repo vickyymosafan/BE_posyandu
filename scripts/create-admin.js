@@ -12,7 +12,7 @@ async function createDefaultAdmin() {
     // Data admin default
     const adminData = {
       nama_pengguna: 'admin',
-      kata_sandi: 'Admin123!',
+      kata_sandi: 'admin123',
       nama_lengkap: 'Administrator Posyandu',
       email: 'admin@posyandu.com'
     };

@@ -28,11 +28,19 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Rate limiting
+// Rate limiting (exclude login route)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 menit
   max: 100, // batasi setiap IP ke 100 permintaan per windowMs
-  message: 'Terlalu banyak permintaan, coba lagi nanti'
+  message: 'Terlalu banyak permintaan, coba lagi nanti',
+  // Jangan batasi endpoint login agar tidak ada batas percobaan login dari sisi rate limiter
+  skip: (req) => {
+    const originalUrl = req.originalUrl || '';
+    const path = req.path || '';
+    // Ketika limiter di-mount pada '/api/', req.path akan menjadi '/auth/login'
+    // Gunakan pengecekan ganda untuk keandalan
+    return originalUrl.startsWith('/api/auth/login') || path === '/auth/login';
+  }
 });
 
 app.use('/api/', limiter);

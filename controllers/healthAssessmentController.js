@@ -313,38 +313,30 @@ class HealthAssessmentController {
      */
     static async getPatientHealthAssessments(req, res) {
         try {
-            const idOrCode = req.params.id;
+            const patientId = req.params.id;
 
-            if (!idOrCode) {
+            // Validasi ID pasien
+            if (!patientId || isNaN(patientId)) {
                 return res.status(400).json({
                     sukses: false,
-                    pesan: 'Parameter ID pasien wajib diisi'
+                    pesan: 'ID pasien tidak valid'
                 });
             }
 
-            // Dukungan ID numerik atau kode id_pasien (mis. PSN2025...)
-            let patientRows;
-            if (/^\d+$/.test(String(idOrCode))) {
-                patientRows = await executeQuery(
-                    'SELECT id, nama, id_pasien FROM pasien WHERE id = ? LIMIT 1',
-                    [Number(idOrCode)]
-                );
-            } else {
-                patientRows = await executeQuery(
-                    'SELECT id, nama, id_pasien FROM pasien WHERE id_pasien = ? LIMIT 1',
-                    [idOrCode]
-                );
-            }
+            // Cek apakah pasien ada
+            const patientExists = await executeQuery(
+                'SELECT id, nama, id_pasien FROM pasien WHERE id = ?',
+                [patientId]
+            );
 
-            if (patientRows.length === 0) {
+            if (patientExists.length === 0) {
                 return res.status(404).json({
                     sukses: false,
                     pesan: 'Pasien tidak ditemukan'
                 });
             }
 
-            const patient = patientRows[0];
-            const patientId = patient.id;
+            const patient = patientExists[0];
 
             // Ambil parameter paginasi
             const page = parseInt(req.query.page) || 1;
