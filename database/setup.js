@@ -1,24 +1,111 @@
 const MigrationRunner = require('../migrations/migrate');
 const DatabaseSeeder = require('./seeds');
-const { testConnection, closePool } = require('../utils/database');
+const { testConnection, initializeConnection, closePool } = require('../utils/database');
 
 /**
  * Database Setup Script
  * Runs migrations and seeds data for initial setup
+ * Enhanced with Railway deployment support
  */
 class DatabaseSetup {
     constructor() {
         this.migrationRunner = new MigrationRunner();
         this.seeder = new DatabaseSeeder();
+        this.isRailway = this.detectRailwayEnvironment();
     }
 
     /**
-     * Full database setup
+     * Detect if running in Railway environment
+     * @returns {boolean} True if Railway environment detected
      */
-    async setup() {
+    detectRailwayEnvironment() {
+        return !!(process.env.DATABASE_URL || 
+                 process.env.MYSQL_URL || 
+                 process.env.RAILWAY_ENVIRONMENT ||
+                 process.env.RAILWAY_PROJECT_ID);
+    }
+
+    /**
+     * Railway-specific setup with auto-migration
+     */
+    async railwaySetup() {
         try {
             console.log('='.repeat(50));
-            console.log('POSYANDU DATABASE SETUP');
+            console.log('RAILWAY POSYANDU DATABASE SETUP');
+            console.log('='.repeat(50));
+            
+            // Initialize Railway connection
+            console.log('\n1. Initializing Railway database connection...');
+            const isConnected = await initializeConnection();
+            if (!isConnected) {
+                throw new Error('Railway database connection failed. Check Railway MySQL service.');
+            }
+            console.log('✓ Railway MySQL connection successful');
+
+            // Run migrations only (no seeding in production)
+            console.log('\n2. Running database migrations...');
+            await this.migrationRunner.up();
+
+            // Check if we need to seed initial admin data
+            const needsSeeding = await this.checkIfSeedingNeeded();
+            if (needsSeeding) {
+                console.log('\n3. Seeding essential data (admin users only)...');
+                await this.seeder.seedAdmins();
+            } else {
+                console.log('\n3. Database already contains data, skipping seeding');
+            }
+
+            console.log('\n' + '='.repeat(50));
+            console.log('RAILWAY DATABASE SETUP COMPLETED!');
+            console.log('='.repeat(50));
+            console.log('\nRailway MySQL database is ready for production use.');
+            console.log('='.repeat(50));
+
+        } catch (error) {
+            console.error('\n' + '='.repeat(50));
+            console.error('RAILWAY DATABASE SETUP FAILED!');
+            console.error('='.repeat(50));
+            console.error('Error:', error.message);
+            console.error('\nRailway troubleshooting:');
+            console.error('1. Verify MySQL service is running in Railway project');
+            console.error('2. Check DATABASE_URL environment variable is set');
+            console.error('3. Ensure Railway MySQL service is linked to this service');
+            console.error('='.repeat(50));
+            throw error;
+        }
+    }
+
+    /**
+     * Check if database needs initial seeding
+     * @returns {Promise<boolean>} True if seeding is needed
+     */
+    async checkIfSeedingNeeded() {
+        try {
+            const { executeQuery } = require('../utils/database');
+            
+            // Check if admin table exists and has data
+            const adminCount = await executeQuery('SELECT COUNT(*) as count FROM admin');
+            return adminCount[0].count === 0;
+        } catch (error) {
+            // If table doesn't exist or query fails, we need seeding
+            console.log('Admin table check failed, assuming seeding is needed');
+            return true;
+        }
+    }
+
+    /**
+     * Full database setup with Railway detection
+     */
+    async setup() {
+        // Use Railway-specific setup if in Railway environment
+        if (this.isRailway) {
+            return await this.railwaySetup();
+        }
+
+        // Standard local development setup
+        try {
+            console.log('='.repeat(50));
+            console.log('POSYANDU DATABASE SETUP (LOCAL)');
             console.log('='.repeat(50));
             
             // Test database connection
@@ -33,7 +120,7 @@ class DatabaseSetup {
             console.log('\n2. Running database migrations...');
             await this.migrationRunner.up();
 
-            // Seed data
+            // Seed data (full seeding for development)
             console.log('\n3. Seeding initial data...');
             await this.seeder.seedAll();
 
@@ -98,6 +185,41 @@ class DatabaseSetup {
     }
 
     /**
+     * Auto-migration for Railway startup
+     * Runs migrations automatically when server starts in Railway
+     */
+    async autoMigrate() {
+        try {
+            console.log('Starting auto-migration for Railway...');
+            
+            // Initialize connection
+            const isConnected = await initializeConnection();
+            if (!isConnected) {
+                throw new Error('Cannot connect to Railway database for auto-migration');
+            }
+
+            // Run migrations
+            console.log('Running database migrations...');
+            await this.migrationRunner.up();
+            
+            // Check and seed if needed
+            const needsSeeding = await this.checkIfSeedingNeeded();
+            if (needsSeeding) {
+                console.log('Seeding essential admin data...');
+                await this.seeder.seedAdmins();
+            }
+
+            console.log('✓ Auto-migration completed successfully');
+            return true;
+        } catch (error) {
+            console.error('Auto-migration failed:', error.message);
+            // Don't throw error to prevent server startup failure
+            // Log error and continue - manual intervention may be needed
+            return false;
+        }
+    }
+
+    /**
      * Show database status
      */
     async status() {
@@ -147,6 +269,12 @@ async function main() {
             case 'setup':
                 await setup.setup();
                 break;
+            case 'railway':
+                await setup.railwaySetup();
+                break;
+            case 'auto-migrate':
+                await setup.autoMigrate();
+                break;
             case 'reset':
                 await setup.reset();
                 break;
@@ -154,10 +282,12 @@ async function main() {
                 await setup.status();
                 break;
             default:
-                console.log('Usage: node setup.js [setup|reset|status]');
-                console.log('  setup  - Run initial database setup (migrations + seeds)');
-                console.log('  reset  - Reset database (clear + fresh setup)');
-                console.log('  status - Show database and migration status');
+                console.log('Usage: node setup.js [setup|railway|auto-migrate|reset|status]');
+                console.log('  setup       - Run initial database setup (auto-detects Railway)');
+                console.log('  railway     - Force Railway-specific setup');
+                console.log('  auto-migrate - Run auto-migration for Railway startup');
+                console.log('  reset       - Reset database (clear + fresh setup)');
+                console.log('  status      - Show database and migration status');
         }
     } catch (error) {
         console.error('Setup command failed:', error);
