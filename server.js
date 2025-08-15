@@ -286,6 +286,54 @@ app.get('/api/ready', async (req, res) => {
   }
 });
 
+// Database status endpoint for Railway monitoring
+app.get('/api/database/status', async (req, res) => {
+  try {
+    const { testConnection, getPoolStats } = require('./utils/database');
+    const startTime = Date.now();
+    
+    // Test database connection
+    const dbConnected = await testConnection(1, 5000);
+    const responseTime = Date.now() - startTime;
+    
+    if (dbConnected) {
+      const poolStats = getPoolStats();
+      
+      res.status(200).json({
+        sukses: true,
+        status: 'connected',
+        responseTime: `${responseTime}ms`,
+        pool: {
+          total: poolStats.totalConnections,
+          free: poolStats.freeConnections,
+          acquiring: poolStats.acquiringConnections
+        },
+        environment: {
+          isRailway: !!(process.env.RAILWAY_ENVIRONMENT || process.env.DATABASE_URL),
+          databaseUrl: !!process.env.DATABASE_URL,
+          mysqlUrl: !!process.env.MYSQL_URL
+        },
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(503).json({
+        sukses: false,
+        status: 'disconnected',
+        responseTime: `${responseTime}ms`,
+        error: 'Database connection failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      sukses: false,
+      status: 'error',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/pasien', patientRoutes);
