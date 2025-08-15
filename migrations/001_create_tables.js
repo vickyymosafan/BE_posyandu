@@ -28,6 +28,29 @@ class CreateTablesMigration {
             await executeQuery('SET FOREIGN_KEY_CHECKS = 0');
             console.log('Disabled foreign key checks for migration');
 
+            // Drop existing tables in correct order (child tables first)
+            const dropTables = [
+                'rujukan',
+                'pengobatan', 
+                'penilaian_kesehatan',
+                'tes_lanjutan',
+                'pemeriksaan_fisik',
+                'log_akses',  // Child table that references pasien
+                'pasien',     // Parent table
+                'admin'       // Independent table
+            ];
+
+            console.log('Dropping existing tables in correct order...');
+            for (const table of dropTables) {
+                try {
+                    await executeQuery(`DROP TABLE IF EXISTS ${table}`);
+                    console.log(`Dropped table: ${table}`);
+                } catch (dropError) {
+                    console.warn(`Warning dropping table ${table}:`, dropError.message);
+                    // Continue with other tables
+                }
+            }
+
             // Read and execute schema file
             const schemaPath = path.join(__dirname, '../database/schema.sql');
             const schemaSQL = await fs.readFile(schemaPath, 'utf8');
@@ -38,6 +61,7 @@ class CreateTablesMigration {
                 .map(stmt => stmt.trim())
                 .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
 
+            console.log('Creating tables from schema...');
             for (const statement of statements) {
                 if (statement.trim()) {
                     await executeQuery(statement);

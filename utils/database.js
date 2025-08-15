@@ -104,7 +104,9 @@ const executeQuery = async (query, params = [], retries = 2) => {
                 code: error.code,
                 sqlState: error.sqlState,
                 attempt: attempt + 1,
-                isRailway: !!process.env.DATABASE_URL
+                isRailway: !!(process.env.RAILWAY_ENVIRONMENT || 
+                            process.env.RAILWAY_PROJECT_ID || 
+                            process.env.DATABASE_URL)
             });
             
             throw error;
@@ -208,7 +210,10 @@ const initializeConnection = async () => {
         database: dbConfig.database,
         port: dbConfig.port,
         connectionLimit: dbConfig.connectionLimit,
-        isRailway: !!process.env.DATABASE_URL || !!process.env.MYSQL_URL,
+        isRailway: !!(process.env.RAILWAY_ENVIRONMENT || 
+                     process.env.RAILWAY_PROJECT_ID || 
+                     process.env.DATABASE_URL || 
+                     process.env.MYSQL_URL),
         environment: process.env.NODE_ENV || 'development'
     };
     console.log('Database configuration:', configInfo);
